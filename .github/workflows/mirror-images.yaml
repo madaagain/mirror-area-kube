@@ -1,14 +1,21 @@
-name: Mirror Docker Images
-
+name: Mirror Docker Images and Repository
 on:
   schedule:
     - cron: '0 2 * * *'  # Exécute tous les jours à 2h du matin
   workflow_dispatch:  # Permet l'exécution manuelle
 
+env:
+  MIRROR_URL: "git@github.com:EpitechPromo2027/B-DEV-500-PAR-5-1-area-alexis.mer.git"
+
 jobs:
-  mirror-images:
+  mirror-images-and-repo:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout repository code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  # Important pour avoir tout l'historique
+
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
@@ -27,3 +34,9 @@ jobs:
         docker pull ghcr.io/epitechpromo2027/area-frontend:latest
         docker tag ghcr.io/epitechpromo2027/area-frontend:latest ghcr.io/${{ github.repository_owner }}/area-frontend:latest
         docker push ghcr.io/${{ github.repository_owner }}/area-frontend:latest
+
+    - name: Mirror repository
+      uses: pixta-dev/repository-mirroring-action@v1
+      with:
+        MIRROR_URL: ${{ env.MIRROR_URL }}
+        GIT_SSH_PRIVATE_KEY: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
